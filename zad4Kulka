@@ -1,0 +1,37 @@
+.eqv STACK_SIZE 2048
+.data
+sys_stack_addr: .word 0
+global_array: .space 40
+stack: .space STACK_SIZE
+.text
+	sw $sp, sys_stack_addr # zachowanie adresu stosu systemowego
+ 	la $sp, stack+STACK_SIZE # zainicjowanie obszaru stosu
+main:
+ 	lw $sp, sys_stack_addr # odtworzenie wskaünika stosu
+#najpierw global_array[10]=<1,10>
+	la $t0, global_array
+	li $t1, 1  #licznik petli
+loop:
+bgt $t1,10 finishLoop
+	sw $t1, ($t0)
+	addi $t0, $t0, 4
+	addi $t1, $t1, 1
+	j loop
+finishLoop:
+#glowny main
+	li $t1, 0 #int s=0
+	subi $sp,$sp,8 #rezerwujemy miejsce dla wskaznika adresu tablicy i rozmiaru (2 inty)
+	la $t0, global_array #wskaznik do global array
+	sw $t0, ($sp) #kladziemy wskaznik na koniec stosu
+	li $t0, 10    #rozmiar tablicy
+	sw $t0, 4($sp) #kladziemy rozmiar tablicy na stos
+	jal sum
+	lw $t0, ($sp) #pobiera zwrocona wartosc
+ 	li $v0, 10
+ 	syscall
+#podprogram sum
+sum: 
+	sw $ra, -4($sp)
+	subi $sp, $sp, 8
+	
+	
